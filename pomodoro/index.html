@@ -51,23 +51,32 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: clamp(8px, 2vmin, 16px);
+    padding: clamp(4px, 2vmin, 16px);
     min-height: 100vh;
     overflow: hidden;
   }
 
+  /* Size presets via ?size= URL param. Default = medium responsive. */
+  :root { --widget-max: 380px; }
+  :root[data-size="xs"]      { --widget-max: 200px; }
+  :root[data-size="small"]   { --widget-max: 280px; }
+  :root[data-size="medium"]  { --widget-max: 380px; }
+  :root[data-size="large"]   { --widget-max: 500px; }
+  :root[data-size="fit"]     { --widget-max: 9999px; }
+
   .widget {
     width: 100%;
-    max-width: 380px;
+    max-width: var(--widget-max);
+    min-width: 0;
     background: var(--white);
     border: 1px solid var(--biscotti);
     border-radius: clamp(8px, 2vmin, 12px);
-    padding: clamp(16px, 4vmin, 28px) clamp(14px, 4vmin, 24px) clamp(14px, 3vmin, 24px);
+    padding: clamp(10px, 4vmin, 28px) clamp(10px, 4vmin, 24px) clamp(10px, 3vmin, 24px);
     box-shadow: 0 4px 20px rgba(44, 43, 39, 0.06);
     transition: border-color 400ms ease;
     display: flex;
     flex-direction: column;
-    gap: clamp(8px, 2vmin, 16px);
+    gap: clamp(6px, 2vmin, 16px);
   }
 
   .break-mode .widget {
@@ -168,7 +177,7 @@
 
   .time-digits {
     font-family: var(--font-mono);
-    font-size: clamp(28px, 11vmin, 48px);
+    font-size: clamp(20px, 11vmin, 56px);
     font-weight: 300;
     color: var(--charcoal);
     line-height: 1;
@@ -422,6 +431,13 @@
 <script>
 (() => {
   const $ = (id) => document.getElementById(id);
+
+  // ---- Size preset from URL query param (?size=xs|small|medium|large|fit) ----
+  const params = new URLSearchParams(window.location.search);
+  const size = (params.get('size') || '').toLowerCase();
+  if (['xs', 'small', 'medium', 'large', 'fit'].includes(size)) {
+    document.documentElement.setAttribute('data-size', size);
+  }
 
   // ---- State ----
   const state = {
