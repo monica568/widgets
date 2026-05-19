@@ -51,8 +51,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 16px;
+    padding: clamp(8px, 2vmin, 16px);
     min-height: 100vh;
+    overflow: hidden;
   }
 
   .widget {
@@ -60,10 +61,13 @@
     max-width: 380px;
     background: var(--white);
     border: 1px solid var(--biscotti);
-    border-radius: 12px;
-    padding: 28px 24px 24px;
+    border-radius: clamp(8px, 2vmin, 12px);
+    padding: clamp(16px, 4vmin, 28px) clamp(14px, 4vmin, 24px) clamp(14px, 3vmin, 24px);
     box-shadow: 0 4px 20px rgba(44, 43, 39, 0.06);
     transition: border-color 400ms ease;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(8px, 2vmin, 16px);
   }
 
   .break-mode .widget {
@@ -74,18 +78,17 @@
     display: flex;
     background: var(--off-white);
     border-radius: 100px;
-    padding: 4px;
-    margin-bottom: 24px;
+    padding: clamp(2px, 0.6vmin, 4px);
     border: 1px solid var(--biscotti);
   }
 
   .mode-toggle button {
     flex: 1;
-    padding: 8px 12px;
+    padding: clamp(5px, 1.5vmin, 8px) clamp(6px, 2vmin, 12px);
     border: none;
     background: transparent;
     font-family: var(--font-heading);
-    font-size: 14px;
+    font-size: clamp(11px, 2.6vmin, 14px);
     font-weight: 500;
     color: var(--iron-gate-50);
     cursor: pointer;
@@ -108,27 +111,27 @@
     text-align: center;
     font-family: var(--font-heading);
     font-style: italic;
-    font-size: 18px;
+    font-size: clamp(14px, 3.5vmin, 18px);
     color: var(--mahogany-desk);
-    margin-bottom: 4px;
     letter-spacing: 0.02em;
+    line-height: 1.1;
   }
 
   .session-count {
     text-align: center;
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: clamp(8px, 1.9vmin, 11px);
     color: var(--iron-gate-50);
     text-transform: uppercase;
     letter-spacing: 0.15em;
-    margin-bottom: 16px;
+    margin-top: -6px;
   }
 
   .ring-wrap {
     position: relative;
-    width: 240px;
-    height: 240px;
-    margin: 0 auto 20px;
+    width: min(240px, 55vmin, 80%);
+    aspect-ratio: 1 / 1;
+    margin: 0 auto;
   }
 
   .ring-bg, .ring-fg {
@@ -160,11 +163,12 @@
     left: 50%;
     transform: translate(-50%, -50%);
     text-align: center;
+    width: 100%;
   }
 
   .time-digits {
     font-family: var(--font-mono);
-    font-size: 48px;
+    font-size: clamp(28px, 11vmin, 48px);
     font-weight: 300;
     color: var(--charcoal);
     line-height: 1;
@@ -174,7 +178,6 @@
 
   .custom-input-wrap {
     display: none;
-    margin-bottom: 16px;
     text-align: center;
   }
 
@@ -185,18 +188,18 @@
   .custom-input-wrap label {
     display: block;
     font-family: var(--font-mono);
-    font-size: 10px;
+    font-size: clamp(8px, 1.9vmin, 10px);
     color: var(--iron-gate-50);
     text-transform: uppercase;
     letter-spacing: 0.15em;
-    margin-bottom: 8px;
+    margin-bottom: clamp(4px, 1.5vmin, 8px);
   }
 
   .custom-input-wrap .slider-row {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 0 8px;
+    gap: clamp(6px, 2vmin, 12px);
+    padding: 0 clamp(4px, 1.5vmin, 8px);
   }
 
   .custom-input-wrap input[type="range"] {
@@ -235,27 +238,26 @@
 
   .custom-input-wrap .value-display {
     font-family: var(--font-mono);
-    font-size: 14px;
+    font-size: clamp(11px, 2.6vmin, 14px);
     font-weight: 500;
     color: var(--mahogany-desk);
-    min-width: 56px;
+    min-width: clamp(44px, 12vmin, 56px);
     text-align: right;
   }
 
   .controls {
     display: flex;
-    gap: 8px;
-    margin-bottom: 12px;
+    gap: clamp(5px, 1.6vmin, 8px);
   }
 
   .controls button {
     flex: 1;
-    padding: 12px 16px;
+    padding: clamp(8px, 2.5vmin, 12px) clamp(10px, 3vmin, 16px);
     border: 1px solid var(--biscotti);
     background: var(--white);
     color: var(--mahogany-desk);
     font-family: var(--font-heading);
-    font-size: 15px;
+    font-size: clamp(12px, 3vmin, 15px);
     font-weight: 500;
     border-radius: 6px;
     cursor: pointer;
@@ -282,15 +284,14 @@
   .skip-break {
     display: none;
     width: 100%;
-    padding: 8px;
+    padding: clamp(4px, 1.5vmin, 8px);
     background: transparent;
     border: none;
     color: var(--dusty-rose);
     font-family: var(--font-heading);
     font-style: italic;
-    font-size: 13px;
+    font-size: clamp(11px, 2.6vmin, 13px);
     cursor: pointer;
-    margin-bottom: 8px;
     text-decoration: underline;
     text-decoration-color: var(--blush);
     text-underline-offset: 3px;
@@ -309,7 +310,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-top: 12px;
+    padding-top: clamp(6px, 1.8vmin, 12px);
     border-top: 1px solid var(--light-pink);
   }
 
@@ -318,14 +319,13 @@
     border: none;
     cursor: pointer;
     color: var(--iron-gate-50);
-    font-size: 14px;
-    padding: 4px 8px;
+    padding: clamp(2px, 1vmin, 4px) clamp(4px, 1.5vmin, 8px);
     border-radius: 4px;
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: clamp(4px, 1.5vmin, 6px);
     font-family: var(--font-mono);
-    font-size: 10px;
+    font-size: clamp(8px, 1.9vmin, 10px);
     text-transform: uppercase;
     letter-spacing: 0.15em;
     transition: color 200ms ease;
@@ -336,7 +336,7 @@
   .brand {
     font-family: var(--font-heading);
     font-style: italic;
-    font-size: 12px;
+    font-size: clamp(10px, 2.4vmin, 12px);
     color: var(--iron-gate-50);
     letter-spacing: 0.02em;
   }
@@ -347,6 +347,16 @@
     transition: color 200ms ease;
   }
   .brand a:hover { color: var(--mahogany-desk); }
+
+  /* Hide secondary chrome on very small embeds so the timer + controls always fit */
+  @media (max-height: 380px) {
+    .footer-row { display: none; }
+    .session-count { display: none; }
+  }
+  @media (max-height: 300px) {
+    .mode-toggle { display: none; }
+    .phase-label { font-size: clamp(12px, 3.5vmin, 16px); }
+  }
 
   /* Subtle pulse when running */
   @keyframes pulse {
