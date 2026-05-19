@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Focus Timer · Systematic You</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --iron-gate: #224E5A;
+    --iron-gate-50: #91ABB2;
+    --iron-gate-25: #C8D5D8;
+    --mahogany-desk: #412510;
+    --dusty-rose: #886175;
+    --blush-hour: #B58894;
+    --biscotti: #D5BCA7;
+    --blush: #F2E2DE;
+    --cream-pink: #EDD8D3;
+    --light-pink: #F6ECE9;
+    --off-white: #FBF6F3;
+    --white: #FFFFFF;
+    --charcoal: #2C2B27;
+
+    --font-heading: 'EB Garamond', Georgia, serif;
+    --font-body: 'EB Garamond', Georgia, serif;
+    --font-mono: 'IBM Plex Mono', 'Courier New', monospace;
+
+    --phase-accent: var(--iron-gate);
+    --phase-accent-light: var(--iron-gate-25);
+  }
+
+  .break-mode {
+    --phase-accent: var(--blush-hour);
+    --phase-accent-light: var(--cream-pink);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    height: 100%;
+    background: var(--off-white);
+    font-family: var(--font-body);
+    color: var(--charcoal);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    min-height: 100vh;
+  }
+
+  .widget {
+    width: 100%;
+    max-width: 380px;
+    background: var(--white);
+    border: 1px solid var(--biscotti);
+    border-radius: 12px;
+    padding: 28px 24px 24px;
+    box-shadow: 0 4px 20px rgba(44, 43, 39, 0.06);
+    transition: border-color 400ms ease;
+  }
+
+  .break-mode .widget {
+    border-color: var(--blush-hour);
+  }
+
+  .mode-toggle {
+    display: flex;
+    background: var(--off-white);
+    border-radius: 100px;
+    padding: 4px;
+    margin-bottom: 24px;
+    border: 1px solid var(--biscotti);
+  }
+
+  .mode-toggle button {
+    flex: 1;
+    padding: 8px 12px;
+    border: none;
+    background: transparent;
+    font-family: var(--font-heading);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--iron-gate-50);
+    cursor: pointer;
+    border-radius: 100px;
+    transition: all 200ms ease;
+    letter-spacing: 0.02em;
+  }
+
+  .mode-toggle button.active {
+    background: var(--phase-accent);
+    color: var(--white);
+  }
+
+  .mode-toggle button:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  .phase-label {
+    text-align: center;
+    font-family: var(--font-heading);
+    font-style: italic;
+    font-size: 18px;
+    color: var(--mahogany-desk);
+    margin-bottom: 4px;
+    letter-spacing: 0.02em;
+  }
+
+  .session-count {
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--iron-gate-50);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-bottom: 16px;
+  }
+
+  .ring-wrap {
+    position: relative;
+    width: 240px;
+    height: 240px;
+    margin: 0 auto 20px;
+  }
+
+  .ring-bg, .ring-fg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+  }
+
+  .ring-bg circle {
+    fill: none;
+    stroke: var(--phase-accent-light);
+    stroke-width: 6;
+  }
+
+  .ring-fg circle {
+    fill: none;
+    stroke: var(--phase-accent);
+    stroke-width: 6;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 1s linear, stroke 400ms ease;
+  }
+
+  .time-display {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+  }
+
+  .time-digits {
+    font-family: var(--font-mono);
+    font-size: 48px;
+    font-weight: 300;
+    color: var(--charcoal);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .custom-input-wrap {
+    display: none;
+    margin-bottom: 16px;
+    text-align: center;
+  }
+
+  .custom-input-wrap.visible {
+    display: block;
+  }
+
+  .custom-input-wrap label {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--iron-gate-50);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-bottom: 8px;
+  }
+
+  .custom-input-wrap .slider-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 8px;
+  }
+
+  .custom-input-wrap input[type="range"] {
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 4px;
+    background: var(--biscotti);
+    border-radius: 2px;
+    outline: none;
+  }
+
+  .custom-input-wrap input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    background: var(--iron-gate);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform 150ms ease;
+  }
+
+  .custom-input-wrap input[type="range"]::-webkit-slider-thumb:hover {
+    transform: scale(1.15);
+  }
+
+  .custom-input-wrap input[type="range"]::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    background: var(--iron-gate);
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+  }
+
+  .custom-input-wrap .value-display {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--mahogany-desk);
+    min-width: 56px;
+    text-align: right;
+  }
+
+  .controls {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .controls button {
+    flex: 1;
+    padding: 12px 16px;
+    border: 1px solid var(--biscotti);
+    background: var(--white);
+    color: var(--mahogany-desk);
+    font-family: var(--font-heading);
+    font-size: 15px;
+    font-weight: 500;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 200ms ease;
+    letter-spacing: 0.02em;
+  }
+
+  .controls button:hover {
+    background: var(--light-pink);
+    border-color: var(--blush-hour);
+  }
+
+  .controls button.primary {
+    background: var(--phase-accent);
+    color: var(--white);
+    border-color: var(--phase-accent);
+  }
+
+  .controls button.primary:hover {
+    filter: brightness(1.08);
+    background: var(--phase-accent);
+  }
+
+  .skip-break {
+    display: none;
+    width: 100%;
+    padding: 8px;
+    background: transparent;
+    border: none;
+    color: var(--dusty-rose);
+    font-family: var(--font-heading);
+    font-style: italic;
+    font-size: 13px;
+    cursor: pointer;
+    margin-bottom: 8px;
+    text-decoration: underline;
+    text-decoration-color: var(--blush);
+    text-underline-offset: 3px;
+    transition: color 200ms ease;
+  }
+
+  .skip-break:hover {
+    color: var(--mahogany-desk);
+  }
+
+  .skip-break.visible {
+    display: block;
+  }
+
+  .footer-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 12px;
+    border-top: 1px solid var(--light-pink);
+  }
+
+  .mute-toggle {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--iron-gate-50);
+    font-size: 14px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    transition: color 200ms ease;
+  }
+
+  .mute-toggle:hover { color: var(--mahogany-desk); }
+
+  .brand {
+    font-family: var(--font-heading);
+    font-style: italic;
+    font-size: 12px;
+    color: var(--iron-gate-50);
+    letter-spacing: 0.02em;
+  }
+
+  .brand a {
+    color: var(--iron-gate-50);
+    text-decoration: none;
+    transition: color 200ms ease;
+  }
+  .brand a:hover { color: var(--mahogany-desk); }
+
+  /* Subtle pulse when running */
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+  }
+
+  .running .phase-label::before {
+    content: '● ';
+    color: var(--phase-accent);
+    animation: pulse 2s ease-in-out infinite;
+    font-size: 8px;
+    vertical-align: middle;
+    margin-right: 4px;
+  }
+</style>
+</head>
+<body>
+  <div class="widget" id="widget">
+    <div class="mode-toggle" role="tablist">
+      <button id="mode-pomodoro" class="active" role="tab" aria-selected="true">Pomodoro</button>
+      <button id="mode-custom" role="tab" aria-selected="false">Custom</button>
+    </div>
+
+    <div class="custom-input-wrap" id="custom-input">
+      <label for="focus-slider">Focus duration</label>
+      <div class="slider-row">
+        <input type="range" id="focus-slider" min="5" max="90" step="5" value="25">
+        <span class="value-display" id="focus-value">25 min</span>
+      </div>
+    </div>
+
+    <div class="phase-label" id="phase-label">Focus</div>
+    <div class="session-count" id="session-count">Session 1</div>
+
+    <div class="ring-wrap">
+      <svg class="ring-bg" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="46"></circle>
+      </svg>
+      <svg class="ring-fg" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="46" id="ring-circle"></circle>
+      </svg>
+      <div class="time-display">
+        <div class="time-digits" id="time-digits">25:00</div>
+      </div>
+    </div>
+
+    <button class="skip-break" id="skip-break">Skip break →</button>
+
+    <div class="controls">
+      <button class="primary" id="start-pause">Start</button>
+      <button id="reset">Reset</button>
+    </div>
+
+    <div class="footer-row">
+      <button class="mute-toggle" id="mute-toggle" title="Toggle chime">
+        <span id="mute-icon">♪</span><span id="mute-label">chime on</span>
+      </button>
+      <div class="brand"><a href="https://systematicyou.com" target="_blank" rel="noopener">Systematic You</a></div>
+    </div>
+  </div>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+
+  // ---- State ----
+  const state = {
+    mode: 'pomodoro',         // 'pomodoro' | 'custom'
+    phase: 'focus',           // 'focus' | 'break'
+    focusDuration: 25 * 60,   // seconds (Pomodoro default)
+    customDuration: 25 * 60,  // seconds (Custom mode setting)
+    breakDuration: 5 * 60,    // seconds (always 5 min)
+    remaining: 25 * 60,
+    running: false,
+    sessionCount: 1,
+    muted: false,
+    tickHandle: null,
+    targetTime: null,         // ms epoch when the current phase ends
+  };
+
+  // ---- LocalStorage persistence ----
+  const STORAGE_KEY = 'sy-pomodoro-v1';
+  function saveState() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        mode: state.mode,
+        customDuration: state.customDuration,
+        muted: state.muted,
+        sessionCount: state.sessionCount,
+      }));
+    } catch(e) {}
+  }
+  function loadState() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+      if (saved.mode === 'custom' || saved.mode === 'pomodoro') state.mode = saved.mode;
+      if (typeof saved.customDuration === 'number') state.customDuration = saved.customDuration;
+      if (typeof saved.muted === 'boolean') state.muted = saved.muted;
+      if (typeof saved.sessionCount === 'number') state.sessionCount = saved.sessionCount;
+    } catch(e) {}
+  }
+
+  // ---- DOM refs ----
+  const widget = $('widget');
+  const modePomodoroBtn = $('mode-pomodoro');
+  const modeCustomBtn = $('mode-custom');
+  const customInputWrap = $('custom-input');
+  const focusSlider = $('focus-slider');
+  const focusValue = $('focus-value');
+  const phaseLabel = $('phase-label');
+  const sessionCountEl = $('session-count');
+  const timeDigits = $('time-digits');
+  const ringCircle = $('ring-circle');
+  const startPauseBtn = $('start-pause');
+  const resetBtn = $('reset');
+  const skipBreakBtn = $('skip-break');
+  const muteToggle = $('mute-toggle');
+  const muteIcon = $('mute-icon');
+  const muteLabel = $('mute-label');
+
+  // Ring math
+  const RING_RADIUS = 46;
+  const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
+  ringCircle.style.strokeDasharray = RING_CIRCUMFERENCE;
+  ringCircle.style.strokeDashoffset = 0;
+
+  // ---- Audio (Web Audio chime, no asset hosting needed) ----
+  let audioCtx = null;
+  function getAudioCtx() {
+    if (!audioCtx) {
+      try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
+    }
+    return audioCtx;
+  }
+  function playChime(kind) {
+    if (state.muted) return;
+    const ctx = getAudioCtx();
+    if (!ctx) return;
+    // Two-tone chime: focus-end goes high->low (rest), break-end goes low->high (engage)
+    const tones = (kind === 'break-end')
+      ? [{ f: 523.25, t: 0 }, { f: 783.99, t: 0.18 }]   // C5, G5
+      : [{ f: 783.99, t: 0 }, { f: 523.25, t: 0.18 }];  // G5, C5
+    tones.forEach(({ f, t }) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = f;
+      const start = ctx.currentTime + t;
+      gain.gain.setValueAtTime(0, start);
+      gain.gain.linearRampToValueAtTime(0.18, start + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, start + 0.5);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(start);
+      osc.stop(start + 0.55);
+    });
+  }
+
+  // ---- Render ----
+  function currentPhaseDuration() {
+    return state.phase === 'focus'
+      ? (state.mode === 'pomodoro' ? state.focusDuration : state.customDuration)
+      : state.breakDuration;
+  }
+
+  function formatTime(s) {
+    s = Math.max(0, Math.ceil(s));
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    return `${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+  }
+
+  function render() {
+    // Mode tabs
+    modePomodoroBtn.classList.toggle('active', state.mode === 'pomodoro');
+    modeCustomBtn.classList.toggle('active', state.mode === 'custom');
+    modePomodoroBtn.setAttribute('aria-selected', state.mode === 'pomodoro');
+    modeCustomBtn.setAttribute('aria-selected', state.mode === 'custom');
+    customInputWrap.classList.toggle('visible', state.mode === 'custom' && state.phase === 'focus');
+
+    // Phase styling
+    widget.parentElement.classList.toggle('break-mode', state.phase === 'break');
+    document.documentElement.classList.toggle('break-mode', state.phase === 'break');
+    widget.classList.toggle('running', state.running);
+
+    // Phase label
+    phaseLabel.textContent = state.phase === 'focus' ? 'Focus' : 'Break';
+
+    // Session count
+    sessionCountEl.textContent = `Session ${state.sessionCount}`;
+
+    // Time
+    timeDigits.textContent = formatTime(state.remaining);
+
+    // Ring fill (depleting)
+    const total = currentPhaseDuration();
+    const pct = total > 0 ? state.remaining / total : 0;
+    ringCircle.style.strokeDashoffset = RING_CIRCUMFERENCE * (1 - pct);
+
+    // Start/Pause button
+    startPauseBtn.textContent = state.running ? 'Pause' : 'Start';
+
+    // Skip break visibility
+    skipBreakBtn.classList.toggle('visible', state.phase === 'break');
+
+    // Mute
+    muteIcon.textContent = state.muted ? '♪̸' : '♪';
+    muteLabel.textContent = state.muted ? 'chime off' : 'chime on';
+
+    // Mode tabs disabled mid-session (only allow switching when stopped on focus phase)
+    const canSwitchMode = !state.running && state.phase === 'focus' && state.remaining === currentPhaseDuration();
+    modePomodoroBtn.disabled = !canSwitchMode && state.mode !== 'pomodoro';
+    modeCustomBtn.disabled = !canSwitchMode && state.mode !== 'custom';
+  }
+
+  // ---- Timer engine ----
+  function tick() {
+    if (!state.running) return;
+    const now = Date.now();
+    const remainingMs = state.targetTime - now;
+    state.remaining = remainingMs / 1000;
+    if (state.remaining <= 0) {
+      state.remaining = 0;
+      finishPhase();
+    } else {
+      render();
+    }
+  }
+
+  function startTimer() {
+    if (state.running) return;
+    // Resume an audio context that was suspended (browser autoplay policy)
+    const ctx = getAudioCtx();
+    if (ctx && ctx.state === 'suspended') ctx.resume();
+    state.running = true;
+    state.targetTime = Date.now() + state.remaining * 1000;
+    state.tickHandle = setInterval(tick, 250);
+    render();
+  }
+
+  function pauseTimer() {
+    if (!state.running) return;
+    state.running = false;
+    clearInterval(state.tickHandle);
+    state.tickHandle = null;
+    // Snap remaining to whole second on pause so it doesn't drift visually
+    state.remaining = Math.ceil(state.remaining);
+    render();
+  }
+
+  function resetTimer() {
+    pauseTimer();
+    state.remaining = currentPhaseDuration();
+    render();
+  }
+
+  function finishPhase() {
+    pauseTimer();
+    if (state.phase === 'focus') {
+      // Focus done -> forced break
+      playChime('focus-end');
+      state.phase = 'break';
+      state.remaining = state.breakDuration;
+      render();
+      // Auto-start the break (forced break behavior)
+      startTimer();
+    } else {
+      // Break done -> next focus session
+      playChime('break-end');
+      state.phase = 'focus';
+      state.sessionCount += 1;
+      state.remaining = currentPhaseDuration();
+      saveState();
+      render();
+      // Stay paused; user starts next session manually
+    }
+  }
+
+  function skipBreak() {
+    if (state.phase !== 'break') return;
+    pauseTimer();
+    state.phase = 'focus';
+    state.sessionCount += 1;
+    state.remaining = currentPhaseDuration();
+    saveState();
+    render();
+  }
+
+  function setMode(newMode) {
+    if (newMode === state.mode) return;
+    if (state.running) return; // safety
+    state.mode = newMode;
+    if (state.phase === 'focus') state.remaining = currentPhaseDuration();
+    saveState();
+    render();
+  }
+
+  // ---- Event wiring ----
+  modePomodoroBtn.addEventListener('click', () => setMode('pomodoro'));
+  modeCustomBtn.addEventListener('click', () => setMode('custom'));
+
+  focusSlider.addEventListener('input', () => {
+    const minutes = parseInt(focusSlider.value, 10);
+    focusValue.textContent = `${minutes} min`;
+    state.customDuration = minutes * 60;
+    if (state.mode === 'custom' && state.phase === 'focus' && !state.running) {
+      state.remaining = state.customDuration;
+      render();
+    }
+    saveState();
+  });
+
+  startPauseBtn.addEventListener('click', () => {
+    state.running ? pauseTimer() : startTimer();
+  });
+
+  resetBtn.addEventListener('click', resetTimer);
+
+  skipBreakBtn.addEventListener('click', skipBreak);
+
+  muteToggle.addEventListener('click', () => {
+    state.muted = !state.muted;
+    saveState();
+    render();
+  });
+
+  // Spacebar = start/pause when widget is focused
+  document.addEventListener('keydown', (e) => {
+    if (e.code === 'Space' && document.activeElement.tagName !== 'INPUT') {
+      e.preventDefault();
+      state.running ? pauseTimer() : startTimer();
+    }
+  });
+
+  // ---- Init ----
+  loadState();
+  focusSlider.value = state.customDuration / 60;
+  focusValue.textContent = `${state.customDuration / 60} min`;
+  state.remaining = currentPhaseDuration();
+  render();
+})();
+</script>
+</body>
+</html>
